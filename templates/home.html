@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat PDF</title>
+    <style>
+        .main-content {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h1>Chat with PDF</h1>
+        <form action="/" method="post" enctype="multipart/form-data">
+            <label for="pdf_docs">Upload your PDF Files:</label><br>
+            <input type="file" id="pdf_docs" name="pdf_docs" multiple><br>
+            <input type="submit" value="Submit & Process">
+        </form>
+    
+        <input type="text" id="user_question" name="user_question" placeholder="Type your question here">
+        <button id="submitBtn">Submit</button> 
+        <button id="speak">Speak</button>
+
+        <p id="response"></p>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+       // Function to handle Speak button click
+function handleSpeakButtonClick() {
+    // Use the SpeechRecognition API to listen for user input
+    var recognition = new webkitSpeechRecognition();
+    recognition.onstart = function () {
+        $('#response').text('Listening...');
+    };
+    recognition.onresult = function (event) {
+        var userQuestion = event.results[0][0].transcript;
+        $('#user_question').val(userQuestion); // Set the user question input value
+
+        // Send the user input to the server
+        $.ajax({
+            type: 'POST',
+            url: '/user',
+            data: {
+                'user_question': userQuestion
+            },
+            success: function (response) {
+                // Update the UI with the server's response
+                $('#response').text('Response: ' + response.response_text);
+
+                // Convert the response text to speech
+                var utterance = new SpeechSynthesisUtterance(response.response_text);
+                window.speechSynthesis.speak(utterance);
+            }
+        });
+    };
+
+    recognition.start();
+}
+
+// Event listener for Speak button
+$('#speak').on('click', function () {
+    handleSpeakButtonClick();
+});
+
+// Event listener for Submit button
+$('#submitBtn').on('click', function () {
+    var userQuestion = $('#user_question').val(); // Get the user question input value
+
+    // Send the user input to the server
+    $.ajax({
+        type: 'POST',
+        url: '/user',
+        data: {
+            'user_question': userQuestion
+        },
+        success: function (response) {
+            // Update the UI with the server's response
+            $('#response').text('Response: ' + response.response_text);
+        }
+    });
+});
+// Event listener for form submission
+$('form').on('submit', function(e) {
+    e.preventDefault();
+
+    var formData = new FormData(this);
+
+    // Show a "Processing..." message
+    $('#response').text('Processing...');
+
+    $.ajax({
+        type: 'POST',
+        url: '/',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+            // Update the UI with the server's response
+            //$('#response').text('Response: ' + response.response_text);
+
+            // Show a "Done" message
+            $('#response').append('<br>Done');
+        }
+    });
+});
+
+    </script>
+</body>
+</html>
