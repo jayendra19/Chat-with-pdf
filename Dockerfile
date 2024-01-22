@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Set build arguments
-ARG GOOGLE_API_KEY="AIzaSyD8M0pXL6FkWuHUl0pZGl9_q3ea6fo2snQ"
+ARG GOOGLE_API_KEY=""
 
 # Set environment variables using build arguments
 ENV GOOGLE_API_KEY=$GOOGLE_API_KEY
